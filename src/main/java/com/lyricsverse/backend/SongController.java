@@ -13,7 +13,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/songs")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+    "http://localhost:5173",
+    "https://lyricsverse-frontend.vercel.app"
+})
 public class SongController {
 
     private final SongRepository songRepository;
@@ -23,10 +26,27 @@ public class SongController {
     }
 
     public record SongRequest(
-        @NotBlank @Size(max = 200) String title,
-        @NotBlank @Size(max = 150) String artist,
-        @NotBlank @Size(max = 80) String language,
-        @NotBlank @Size(max = 100000) String lyrics
+        @NotBlank
+        @Size(max = 200)
+        String title,
+
+        @NotBlank
+        @Size(max = 150)
+        String artist,
+
+        @NotBlank
+        @Size(max = 80)
+        String language,
+
+        @NotBlank
+        @Size(max = 100000)
+        String lyrics,
+
+        @Size(max = 20)
+        String songType,
+
+        @Size(max = 255)
+        String movieName
     ) {}
 
     @GetMapping
@@ -56,7 +76,6 @@ public class SongController {
 
         Song song = findSong(id);
         updateSongFields(song, request);
-
         return songRepository.save(song);
     }
 
@@ -64,21 +83,55 @@ public class SongController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteSong(@PathVariable Long id) {
-        Song song = findSong(id);
-        songRepository.delete(song);
+        songRepository.delete(findSong(id));
     }
 
     private Song findSong(Long id) {
         return songRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Song not found"));
+                HttpStatus.NOT_FOUND,
+                "Song not found"
+            ));
     }
 
-    private void updateSongFields(Song song, SongRequest request) {
+    private void updateSongFields(
+            Song song,
+            SongRequest request) {
+
         song.setTitle(request.title().trim());
         song.setArtist(request.artist().trim());
         song.setLanguage(request.language().trim());
         song.setLyrics(request.lyrics().trim());
+
+        String type = request.songType();
+
+        if (type == null || type.isBlank()) {
+            type = "PRIVATE";
+        }
+
+        type = type.trim().toUpperCase();
+
+        if (!type.equals("MOVIE") && !type.equals("PRIVATE")) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Song type must be MOVIE or PRIVATE"
+            );
+        }
+
+        if (type.equals("MOVIE")) {
+            if (request.movieName() == null
+                    || request.movieName().isBlank()) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Movie name is required for movie songs"
+                );
+            }
+
+            song.setMovieName(request.movieName().trim());
+        } else {
+            song.setMovieName(null);
+        }
+
+        song.setSongType(type);
     }
 }
-
