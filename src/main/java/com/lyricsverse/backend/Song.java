@@ -15,17 +15,22 @@ public class Song {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 255)
     private String title;
+
+    @Column(length = 255)
     private String artist;
+
+    @Column(length = 100)
     private String language;
 
     @Column(columnDefinition = "TEXT")
     private String lyrics;
 
-    @Column(name = "song_type", nullable = false)
+    @Column(name = "song_type", length = 20, nullable = false)
     private String songType = "PRIVATE";
 
-    @Column(name = "movie_name")
+    @Column(name = "movie_name", length = 255)
     private String movieName;
 
     public Song() {
