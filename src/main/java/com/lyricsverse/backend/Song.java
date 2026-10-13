@@ -1,5 +1,6 @@
 package com.lyricsverse.backend;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,10 +19,14 @@ public class Song {
     private String artist;
     private String language;
 
-    @jakarta.persistence.Column(
-        columnDefinition = "TEXT"
-    )
+    @Column(columnDefinition = "TEXT")
     private String lyrics;
+
+    @Column(name = "song_type", nullable = false)
+    private String songType = "PRIVATE";
+
+    @Column(name = "movie_name")
+    private String movieName;
 
     public Song() {
     }
@@ -61,5 +66,20 @@ public class Song {
     public void setLyrics(String lyrics) {
         this.lyrics = lyrics;
     }
-}
 
+    public String getSongType() {
+        return songType;
+    }
+
+    public void setSongType(String songType) {
+        this.songType = songType;
+    }
+
+    public String getMovieName() {
+        return movieName;
+    }
+
+    public void setMovieName(String movieName) {
+        this.movieName = movieName;
+    }
+}
